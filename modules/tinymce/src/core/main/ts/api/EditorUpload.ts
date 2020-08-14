@@ -14,6 +14,7 @@ import * as Rtc from '../Rtc';
 import Editor from './Editor';
 import { BlobCache, BlobInfo } from './file/BlobCache';
 import * as Settings from './Settings';
+import Env from './Env';
 
 /**
  * Handles image uploads, updates undo stack and patches over various internal functions.
@@ -30,6 +31,8 @@ export interface UploadResult {
 }
 
 export type UploadCallback = (results: UploadResult[]) => void;
+
+type ReplaceFunction = (content: string, targetUrl: string, replacementUrl: string) => string;
 
 interface EditorUpload {
   blobCache: BlobCache;
@@ -81,14 +84,25 @@ const EditorUpload = function (editor: Editor): EditorUpload {
     return content;
   };
 
-  const replaceUrlInUndoStack = function (targetUrl: string, replacementUrl: string) {
-    Arr.each(editor.undoManager.data, function (level) {
+  const replaceImageUrlForPlaceholder = (content: string, targetUrl: string, replacementUrl: string): string => {
+    const placeholder = Settings.getPlaceholder(editor);
+
+    content = replaceString(content, 'src="' + targetUrl + '"', 'src="' + replacementUrl + '" data-mce-placeholder="' + placeholder + '" ');
+    content = replaceString(content, 'data-mce-src="' + targetUrl + '"', 'data-mce-src="' + replacementUrl + '"');
+
+    return content;
+  };
+
+  const replaceUrlInUndoStack = (targetUrl: string, replacementUrl: string, replaceFunction?: ReplaceFunction) => {
+    const replace = replaceFunction || replaceImageUrl;
+
+    Arr.each(editor.undoManager.data, (level) => {
       if (level.type === 'fragmented') {
-        level.fragments = Arr.map(level.fragments, function (fragment) {
-          return replaceImageUrl(fragment, targetUrl, replacementUrl);
-        });
+        level.fragments = Arr.map(level.fragments, (fragment) =>
+          replace(fragment, targetUrl, replacementUrl)
+        );
       } else {
-        level.content = replaceImageUrl(level.content, targetUrl, replacementUrl);
+        level.content = replace(level.content, targetUrl, replacementUrl);
       }
     });
   };
@@ -160,6 +174,7 @@ const EditorUpload = function (editor: Editor): EditorUpload {
             editor.undoManager.transact(() => {
               Arr.each(imagesToRemove, (element) => {
                 editor.dom.remove(element);
+                replaceUrlInUndoStack(element.getAttribute('src'), Env.transparentSrc, replaceImageUrlForPlaceholder);
                 blobCache.removeByUri(element.src);
               });
             });
