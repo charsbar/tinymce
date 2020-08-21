@@ -19,6 +19,13 @@ const redistributeToW = function (newWidths: string[], cells: DetailExt[], unit:
   });
 };
 
+const redistributeToColumns = (newWidths: string[], groups: SugarElement[], unit: string) => {
+  Arr.each(groups, (column, index: number) => {
+    const width = Redistribution.sum([ newWidths[index] ], CellUtils.minWidth());
+    Css.set(column, 'width', width + unit);
+  });
+};
+
 const redistributeToH = function <T> (newHeights: string[], rows: RowData<T>[], cells: DetailExt[], unit: string) {
   Arr.each(cells, function (cell) {
     const heights = newHeights.slice(cell.row, cell.rowspan + cell.row);
@@ -41,13 +48,20 @@ const redistribute = function (table: SugarElement, optWidth: Optional<string>, 
   const warehouse = Warehouse.fromTable(table);
   const rows = warehouse.all;
   const cells = Warehouse.justCells(warehouse);
+  const columns = Warehouse.justColumns(warehouse);
 
-  optWidth.each(function (newWidth) {
-    const wUnit = getUnit(newWidth);
+  optWidth.each((newWidth) => {
+    const widthUnit = getUnit(newWidth);
     const totalWidth = Width.get(table);
     const oldWidths = ColumnSizes.getRawWidths(warehouse, tableSize);
     const nuWidths = Redistribution.redistribute(oldWidths, totalWidth, newWidth);
-    redistributeToW(nuWidths, cells, wUnit);
+
+    if (Warehouse.hasColumns(warehouse)) {
+      redistributeToColumns(nuWidths, columns, widthUnit);
+    } else {
+      redistributeToW(nuWidths, cells, widthUnit);
+    }
+
     Css.set(table, 'width', newWidth);
   });
 

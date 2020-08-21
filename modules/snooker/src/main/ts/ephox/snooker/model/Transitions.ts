@@ -51,6 +51,15 @@ const toGrid = function (warehouse: Warehouse, generators: Generators, isNew: bo
     const row = Structs.rowcells(rowCells, warehouse.all[i].section);
     grid.push(row);
   }
+
+  if (Warehouse.hasColumns(warehouse)) {
+    const groupElementNew = Arr.map(warehouse.groups, (group: SugarElement): Structs.ElementNew =>
+      Structs.elementnew(group, isNew)
+    );
+
+    grid.push(Structs.rowcells(groupElementNew, 'colgroup'));
+  }
+
   return grid;
 };
 

@@ -4,6 +4,7 @@ import { Attribute, Css, Insert, InsertAll, SugarElement } from '@ephox/sugar';
 export interface RenderOptions {
   styles: Record<string, string>;
   attributes: Record<string, string>;
+  useColumnGroups: boolean;
 }
 
 const DefaultRenderOptions: RenderOptions = {
@@ -13,12 +14,15 @@ const DefaultRenderOptions: RenderOptions = {
   },
   attributes: {
     border: '1'
-  }
+  },
+  useColumnGroups: false
 };
 
 const tableHeaderCell = () => SugarElement.fromTag('th');
 
 const tableCell = () => SugarElement.fromTag('td');
+
+const tableColumn = () => SugarElement.fromTag('col');
 
 const createRow = (columns: number, rowHeaders: number, columnHeaders: number, rowIndex: number) => {
   const tr = SugarElement.fromTag('tr');
@@ -35,6 +39,16 @@ const createRow = (columns: number, rowHeaders: number, columnHeaders: number, r
   return tr;
 };
 
+const createGroupRow = (columns: number) => {
+  const columnGroup = SugarElement.fromTag('colgroup');
+
+  for (let index = 0; index < columns; index++) {
+    Insert.append(columnGroup, tableColumn());
+  }
+
+  return columnGroup;
+};
+
 const createRows = (rows: number, columns: number, rowHeaders: number, columnHeaders: number) =>
   Arr.range(rows, (r) => createRow(columns, rowHeaders, columnHeaders, r));
 
@@ -46,6 +60,10 @@ const render = (rows: number, columns: number, rowHeaders: number, columnHeaders
   Attribute.setAll(table, renderOpts.attributes);
 
   const actualRowHeaders = Math.min(rows, rowHeaders);
+
+  if (renderOpts.useColumnGroups) {
+    Insert.append(table, createGroupRow(columns));
+  }
 
   if (rowHeadersGoInThead && rowHeaders > 0) {
     const thead = SugarElement.fromTag('thead');

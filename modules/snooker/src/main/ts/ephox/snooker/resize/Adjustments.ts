@@ -13,6 +13,20 @@ import { BarPositions, RowInfo } from './BarPositions';
 
 const sumUp = (newSize: number[]) => Arr.foldr(newSize, (b, a) => b + a, 0);
 
+const recalculateAndApply = (warehouse: Warehouse, widths: number[], tableSize: TableSize): void => {
+  // Set the width of each cell based on the column widths
+  let newSizes: Recalculations.CellWidthSpan[] = [];
+  if (Warehouse.hasColumns(warehouse)) {
+    newSizes = Recalculations.recalculateWidthForColumns(warehouse, widths);
+  } else {
+    newSizes = Recalculations.recalculateWidthForTd(warehouse, widths);
+  }
+
+  Arr.each(newSizes, (cell) => {
+    tableSize.setElementWidth(cell.element, cell.width);
+  });
+};
+
 const adjustWidth = (table: SugarElement, delta: number, index: number, resizing: ResizeBehaviour, tableSize: TableSize) => {
   const warehouse = Warehouse.fromTable(table);
   const step = tableSize.getCellDelta(delta);
@@ -24,12 +38,7 @@ const adjustWidth = (table: SugarElement, delta: number, index: number, resizing
   const deltas = Deltas.determine(widths, index, clampedStep, tableSize, resizing);
   const newWidths = Arr.map(deltas, (dx, i) => dx + widths[i]);
 
-  // Set the width of each cell based on the column widths
-  const newSizes = Recalculations.recalculateWidth(warehouse, newWidths);
-  Arr.each(newSizes, (cell) => {
-    tableSize.setElementWidth(cell.element, cell.width);
-  });
-
+  recalculateAndApply(warehouse, newWidths, tableSize);
   resizing.resizeTable(tableSize.adjustTableWidth, clampedStep, isLastColumn);
 };
 
@@ -59,11 +68,7 @@ const adjustWidthTo = <T extends Detail> (table: SugarElement, list: RowData<T>[
   const warehouse = Warehouse.generate(list);
   const widths = tableSize.getWidths(warehouse, tableSize);
 
-  // Set the width of each cell based on the column widths
-  const newSizes = Recalculations.recalculateWidth(warehouse, widths);
-  Arr.each(newSizes, (cell) => {
-    tableSize.setElementWidth(cell.element, cell.width);
-  });
+  recalculateAndApply(warehouse, widths, tableSize);
 };
 
 export { adjustWidth, adjustHeight, adjustWidthTo };

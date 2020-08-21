@@ -1,4 +1,5 @@
 import { SugarElement } from '@ephox/sugar';
+import { Arr } from '@ephox/katamari';
 
 export interface Dimension {
   readonly width: number;
@@ -40,7 +41,8 @@ export interface DetailExt extends Detail {
   readonly column: number;
 }
 
-export type Section = 'tfoot' | 'thead' | 'tbody';
+export type Section = 'tfoot' | 'thead' | 'tbody' | 'colgroup';
+const validSectionList: Section[] = [ 'tfoot', 'thead', 'tbody', 'colgroup' ];
 
 export interface RowCells {
   readonly cells: ElementNew[];
@@ -73,6 +75,9 @@ export interface Bounds {
   readonly finishRow: number;
   readonly finishCol: number;
 }
+
+const isValidSection = (parentName: string): parentName is Section =>
+  Arr.contains(validSectionList, parentName);
 
 const dimension = (width: number, height: number): Dimension => ({
   width,
@@ -169,5 +174,6 @@ export {
   rowdatanew,
   rowcells,
   rowdetails,
-  bounds
+  bounds,
+  isValidSection
 };

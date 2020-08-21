@@ -25,10 +25,19 @@ const insertRowAt = function (grid: Structs.RowCells[], index: number, example: 
 // substitution :: (item, comparator) -> item
 // example is the location of the cursor (the column index)
 // index is the insert position (at - or after - example) (the column index)
-const insertColumnAt = function (grid: Structs.RowCells[], index: number, example: number, comparator: CompElm, substitution: Subst) {
-  return Arr.map(grid, function (row) {
+const insertColumnAt = (grid: Structs.RowCells[], index: number, example: number, comparator: CompElm, substitution: Subst) =>
+  Arr.map(grid, (row) => {
     const withinSpan = index > 0 && index < GridRow.cellLength(row) && comparator(GridRow.getCellElement(row, index - 1), GridRow.getCellElement(row, index));
-    const sub = withinSpan ? GridRow.getCell(row, index) : Structs.elementnew(substitution(GridRow.getCellElement(row, example), comparator), true);
+    let sub: Structs.ElementNew;
+
+    if (row.section === 'colgroup') {
+      sub = Structs.elementnew(substitution(GridRow.getCellElement(row, example), comparator), true);
+    } else if (withinSpan) {
+      sub = GridRow.getCell(row, index);
+    } else {
+      sub = Structs.elementnew(substitution(GridRow.getCellElement(row, example), comparator), true);
+    }
+
     return GridRow.addCell(row, index, sub);
   });
 };

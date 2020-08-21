@@ -1,5 +1,5 @@
 import { Arr, Optional } from '@ephox/katamari';
-import { SugarElement } from '@ephox/sugar';
+import { SugarElement, Traverse } from '@ephox/sugar';
 import * as Structs from '../api/Structs';
 import * as DetailsList from './DetailsList';
 
@@ -7,6 +7,7 @@ export interface Warehouse {
   readonly grid: Structs.Grid;
   readonly access: Record<string, Structs.DetailExt>;
   readonly all: Structs.RowData<Structs.DetailExt>[];
+  readonly groups: SugarElement[];
 }
 
 const key = function (row: number, column: number) {
@@ -47,8 +48,9 @@ const generate = function <T extends Structs.Detail> (list: Structs.RowData<T>[]
   //          rowspan (merge cols)
   const access: Record<string, Structs.DetailExt> = {};
   const cells: Structs.RowData<Structs.DetailExt>[] = [];
+  let groups: SugarElement[] = [];
 
-  const maxRows = list.length;
+  let maxRows = 0;
   let maxColumns = 0;
 
   Arr.each(list, function (details, r) {
@@ -77,7 +79,15 @@ const generate = function <T extends Structs.Detail> (list: Structs.RowData<T>[]
       currentRow.push(current);
     });
 
-    cells.push(Structs.rowdata(details.element, currentRow, details.section));
+    if (details.section === 'colgroup') {
+      groups = Traverse.children(details.element);
+      groups = Arr.filter(groups, (element): boolean =>
+        element.dom.nodeName === 'COL'
+      );
+    } else {
+      maxRows++;
+      cells.push(Structs.rowdata(details.element, currentRow, details.section));
+    }
   });
 
   const grid = Structs.grid(maxRows, maxColumns);
@@ -85,7 +95,8 @@ const generate = function <T extends Structs.Detail> (list: Structs.RowData<T>[]
   return {
     grid,
     access,
-    all: cells
+    all: cells,
+    groups
   };
 };
 
@@ -100,11 +111,19 @@ const justCells = function (warehouse: Warehouse) {
   return Arr.flatten(rows);
 };
 
+const justColumns = (warehouse: Warehouse) =>
+  Arr.map(warehouse.groups, (group) => group);
+
+const hasColumns = (warehouse: Warehouse) =>
+  warehouse.groups.length > 0;
+
 export const Warehouse = {
   fromTable,
   generate,
   getAt,
   findItem,
   filterItems,
-  justCells
+  justCells,
+  justColumns,
+  hasColumns
 };

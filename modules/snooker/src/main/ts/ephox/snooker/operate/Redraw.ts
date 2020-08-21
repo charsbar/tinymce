@@ -1,6 +1,6 @@
 import { Arr, Fun } from '@ephox/katamari';
 import { Attribute, Insert, InsertAll, Remove, Replication, SelectorFilter, SelectorFind, SugarElement, Traverse } from '@ephox/sugar';
-import { Detail, DetailNew, RowDataNew } from '../api/Structs';
+import { Detail, DetailNew, RowDataNew, Section } from '../api/Structs';
 
 const setIfNot = function (element: SugarElement, property: string, value: number, ignore: number): void {
   if (value === ignore) {
@@ -24,8 +24,8 @@ const render = function <T extends DetailNew> (table: SugarElement, grid: RowDat
     (c) => Fun.curry(Insert.after, c)
   );
 
-  const renderSection = function (gridSection: RowDataNew<T>[], sectionName: 'thead' | 'tbody' | 'tfoot') {
-    const section = SelectorFind.child(table, sectionName).getOrThunk(function () {
+  const renderSection = (gridSection: RowDataNew<T>[], sectionName: Section) => {
+    const section = SelectorFind.child(table, sectionName).getOrThunk(() => {
       const tb = SugarElement.fromTag(sectionName, Traverse.owner(table).dom);
       sectionName === 'thead' ? insertThead(tb) : Insert.append(table, tb); // mutation
       return tb;
@@ -50,14 +50,16 @@ const render = function <T extends DetailNew> (table: SugarElement, grid: RowDat
       return tr;
     });
 
-    InsertAll.append(section, rows);
+    if (sectionName !== 'colgroup') {
+      InsertAll.append(section, rows);
+    }
   };
 
-  const removeSection = function (sectionName: 'thead' | 'tbody' | 'tfoot') {
+  const removeSection = (sectionName: Section) => {
     SelectorFind.child(table, sectionName).each(Remove.remove);
   };
 
-  const renderOrRemoveSection = function (gridSection: RowDataNew<T>[], sectionName: 'thead' | 'tbody' | 'tfoot') {
+  const renderOrRemoveSection = (gridSection: RowDataNew<T>[], sectionName: Section) => {
     if (gridSection.length > 0) {
       renderSection(gridSection, sectionName);
     } else {
@@ -68,6 +70,7 @@ const render = function <T extends DetailNew> (table: SugarElement, grid: RowDat
   const headSection: RowDataNew<T>[] = [];
   const bodySection: RowDataNew<T>[] = [];
   const footSection: RowDataNew<T>[] = [];
+  const columnGroupsSection: RowDataNew<T>[] = [];
 
   Arr.each(grid, function (row) {
     switch (row.section) {
@@ -80,12 +83,19 @@ const render = function <T extends DetailNew> (table: SugarElement, grid: RowDat
       case 'tfoot':
         footSection.push(row);
         break;
+      case 'colgroup':
+        columnGroupsSection.push(row);
+        break;
     }
   });
 
   renderOrRemoveSection(headSection, 'thead');
   renderOrRemoveSection(bodySection, 'tbody');
   renderOrRemoveSection(footSection, 'tfoot');
+
+  if (columnGroupsSection.length) {
+    renderOrRemoveSection(columnGroupsSection, 'colgroup');
+  }
 
   return {
     newRows,

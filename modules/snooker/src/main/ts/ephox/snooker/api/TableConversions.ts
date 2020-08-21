@@ -24,7 +24,16 @@ const convertToPixelSize = (table: SugarElement<HTMLTableElement>, tableSize: Ta
 
 const convertToNoneSize = (table: SugarElement<HTMLTableElement>) => {
   Css.remove(table, 'width');
-  Arr.each(TableLookup.cells(table), (cell) => {
+  const columns = TableLookup.columns(table);
+  let rowElements: SugarElement<HTMLElement>[];
+
+  if (columns.length > 0) {
+    rowElements = columns;
+  } else {
+    rowElements = TableLookup.cells(table);
+  }
+
+  Arr.each(rowElements, (cell) => {
     Css.remove(cell, 'width');
     cleanupLegacyAttributes(cell);
   });

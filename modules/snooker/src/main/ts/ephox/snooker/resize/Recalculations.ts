@@ -30,7 +30,7 @@ interface CellHeightSpan extends CellHeight {
 
 // Returns an array of all cells in warehouse with updated cell-widths, using
 // the array 'widths' of the representative widths of each column of the table 'warehouse'
-const recalculateWidth = function (warehouse: Warehouse, widths: number[]): CellWidthSpan[] {
+const recalculateWidthForTd = (warehouse: Warehouse, widths: number[]): CellWidthSpan[] => {
   const all = Warehouse.justCells(warehouse);
 
   return Arr.map(all, function (cell) {
@@ -42,6 +42,16 @@ const recalculateWidth = function (warehouse: Warehouse, widths: number[]): Cell
       colspan: cell.colspan
     };
   });
+};
+
+const recalculateWidthForColumns = (warehouse: Warehouse, widths: number[]): CellWidthSpan[] => {
+  const groups = Warehouse.justColumns(warehouse);
+
+  return Arr.map(groups, (cell: SugarElement, index: number) => ({
+    element: cell,
+    width: widths[index],
+    colspan: 1
+  }));
 };
 
 const recalculateHeight = function (warehouse: Warehouse, heights: number[]): CellHeightSpan[] {
@@ -66,7 +76,9 @@ const matchRowHeight = function (warehouse: Warehouse, heights: number[]): CellH
 };
 
 export {
-  recalculateWidth,
+  recalculateWidthForTd,
+  recalculateWidthForColumns,
   recalculateHeight,
-  matchRowHeight
+  matchRowHeight,
+  CellWidthSpan
 };
