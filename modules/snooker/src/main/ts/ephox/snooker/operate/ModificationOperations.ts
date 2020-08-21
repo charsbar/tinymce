@@ -40,7 +40,6 @@ const insertColumnAt = (grid: Structs.RowCells[], index: number, example: number
 
     return GridRow.addCell(row, index, sub);
   });
-};
 
 // substitution :: (item, comparator) -> item
 // Returns:

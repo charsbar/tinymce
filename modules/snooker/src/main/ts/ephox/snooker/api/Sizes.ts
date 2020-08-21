@@ -44,7 +44,7 @@ const getUnit = function (newSize: string) {
 
 // Procedure to resize table dimensions to optWidth x optHeight and redistribute cell and row dimensions.
 // Updates CSS of the table, rows, and cells.
-const redistribute = function (table: SugarElement, optWidth: Optional<string>, optHeight: Optional<string>, tableSize: TableSize) {
+const redistribute = (table: SugarElement, optWidth: Optional<string>, optHeight: Optional<string>, tableSize: TableSize) => {
   const warehouse = Warehouse.fromTable(table);
   const rows = warehouse.all;
   const cells = Warehouse.justCells(warehouse);
@@ -65,7 +65,7 @@ const redistribute = function (table: SugarElement, optWidth: Optional<string>, 
     Css.set(table, 'width', newWidth);
   });
 
-  optHeight.each(function (newHeight) {
+  optHeight.each((newHeight) => {
     const hUnit = getUnit(newHeight);
     const totalHeight = Height.get(table);
     const oldHeights = ColumnSizes.getRawHeights(warehouse, BarPositions.height);
@@ -73,7 +73,6 @@ const redistribute = function (table: SugarElement, optWidth: Optional<string>, 
     redistributeToH(nuHeights, rows, cells, hUnit);
     Css.set(table, 'height', newHeight);
   });
-
 };
 
 const isPercentSizing = Sizes.isPercentSizing;

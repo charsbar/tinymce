@@ -75,7 +75,6 @@ const getTableHeaderType = (editor: Editor): string => {
   }
 };
 
-
 const getColumnResizingBehaviour = (editor: Editor): 'preservetable' | 'resizetable' => {
   const validModes: Array<'preservetable' | 'resizetable'> = [ 'preservetable', 'resizetable' ];
   const givenMode = editor.getParam('table_column_resizing', defaultColumnResizingBehaviour, 'string');

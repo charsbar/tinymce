@@ -38,7 +38,7 @@ const filterItems = function (warehouse: Warehouse, predicate: (x: Structs.Detai
  *  2. a data structure which can efficiently identify which cell is in which row,column position
  *  3. a list of all cells in order left-to-right, top-to-bottom
  */
-const generate = function <T extends Structs.Detail> (list: Structs.RowData<T>[]): Warehouse {
+const generate = <T extends Structs.Detail> (list: Structs.RowData<T>[]): Warehouse => {
   // list is an array of objects, made by cells and elements
   // elements: is the TR
   // cells: is an array of objects representing the cells in the row.
@@ -53,40 +53,40 @@ const generate = function <T extends Structs.Detail> (list: Structs.RowData<T>[]
   let maxRows = 0;
   let maxColumns = 0;
 
-  Arr.each(list, function (details, r) {
+  Arr.each(list, (rowData, rowIndex) => {
     const currentRow: Structs.DetailExt[] = [];
-    Arr.each(details.cells, function (detail) {
+    Arr.each(rowData.cells, (rowCell) => {
       let start = 0;
 
       // If this spot has been taken by a previous rowspan, skip it.
-      while (access[key(r, start)] !== undefined) {
+      while (access[key(rowIndex, start)] !== undefined) {
         start++;
       }
 
-      const current = Structs.extended(detail.element, detail.rowspan, detail.colspan, r, start);
+      const current = Structs.extended(rowCell.element, rowCell.rowspan, rowCell.colspan, rowIndex, start);
 
       // Occupy all the (row, column) positions that this cell spans for.
-      for (let i = 0; i < detail.colspan; i++) {
-        for (let j = 0; j < detail.rowspan; j++) {
-          const cr = r + j;
-          const cc = start + i;
-          const newpos = key(cr, cc);
+      for (let occupiedColumnPosition = 0; occupiedColumnPosition < rowCell.colspan; occupiedColumnPosition++) {
+        for (let occupiedRowPosition = 0; occupiedRowPosition < rowCell.rowspan; occupiedRowPosition++) {
+          const rowPosition = rowIndex + occupiedRowPosition;
+          const columnPosition = start + occupiedColumnPosition;
+          const newpos = key(rowPosition, columnPosition);
           access[newpos] = current;
-          maxColumns = Math.max(maxColumns, cc + 1);
+          maxColumns = Math.max(maxColumns, columnPosition + 1);
         }
       }
 
       currentRow.push(current);
     });
 
-    if (details.section === 'colgroup') {
-      groups = Traverse.children(details.element);
+    if (rowData.section === 'colgroup') {
+      groups = Traverse.children(rowData.element);
       groups = Arr.filter(groups, (element): boolean =>
         element.dom.nodeName === 'COL'
       );
     } else {
       maxRows++;
-      cells.push(Structs.rowdata(details.element, currentRow, details.section));
+      cells.push(Structs.rowdata(rowData.element, currentRow, rowData.section));
     }
   });
 

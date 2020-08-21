@@ -2,7 +2,7 @@ import { Arr, Fun } from '@ephox/katamari';
 import { Attribute, Insert, InsertAll, Remove, Replication, SelectorFilter, SelectorFind, SugarElement, Traverse } from '@ephox/sugar';
 import { Detail, DetailNew, RowDataNew, Section } from '../api/Structs';
 
-const setIfNot = function (element: SugarElement, property: string, value: number, ignore: number): void {
+const setIfNot = (element: SugarElement, property: string, value: number, ignore: number): void => {
   if (value === ignore) {
     Attribute.remove(element, property);
   } else {
@@ -15,7 +15,7 @@ interface NewRowsAndCells {
   readonly newCells: SugarElement[];
 }
 
-const render = function <T extends DetailNew> (table: SugarElement, grid: RowDataNew<T>[]): NewRowsAndCells {
+const render = <T extends DetailNew> (table: SugarElement, grid: RowDataNew<T>[]): NewRowsAndCells => {
   const newRows: SugarElement[] = [];
   const newCells: SugarElement[] = [];
 
@@ -33,13 +33,13 @@ const render = function <T extends DetailNew> (table: SugarElement, grid: RowDat
 
     Remove.empty(section);
 
-    const rows = Arr.map(gridSection, function (row) {
+    const rows = Arr.map(gridSection, (row) => {
       if (row.isNew) {
         newRows.push(row.element);
       }
       const tr = row.element;
       Remove.empty(tr);
-      Arr.each(row.cells, function (cell) {
+      Arr.each(row.cells, (cell) => {
         if (cell.isNew) {
           newCells.push(cell.element);
         }
@@ -72,7 +72,7 @@ const render = function <T extends DetailNew> (table: SugarElement, grid: RowDat
   const footSection: RowDataNew<T>[] = [];
   const columnGroupsSection: RowDataNew<T>[] = [];
 
-  Arr.each(grid, function (row) {
+  Arr.each(grid, (row) => {
     switch (row.section) {
       case 'thead':
         headSection.push(row);
