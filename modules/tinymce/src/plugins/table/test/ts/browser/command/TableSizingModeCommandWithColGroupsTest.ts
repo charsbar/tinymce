@@ -14,15 +14,15 @@ interface Scenario {
   cols: number;
   rows: number;
   expectedTableWidth: number;
-  expectedWidths: number[][];
+  expectedWidths: number[];
   newMode: SizingMode;
 }
 
-UnitTest.asynctest('browser.tinymce.plugins.table.command.TableSizingModeCommandTest', (success, failure) => {
+UnitTest.asynctest('browser.tinymce.plugins.table.command.TableSizingModeCommandWithColGroupsTest', (success, failure) => {
   Plugin();
   SilverTheme();
 
-  const getUnit = (mode: SizingMode) => {
+  const getUnit = (mode: SizingMode): 'px' | '%' | null => {
     switch (mode) {
       case 'fixed':
         return 'px';
@@ -43,23 +43,32 @@ UnitTest.asynctest('browser.tinymce.plugins.table.command.TableSizingModeCommand
 
   const generateTable = (mode: SizingMode, width: number, rows: number, cols: number) => {
     const tableWidth = generateWidth(mode, width, 1);
-    const renderedRows = Arr.range(rows, (row) => '<tr>' + Arr.range(cols, (col) => {
+
+    const renderedRows = Arr.range(rows, (row) =>
+      '<tr>' + Arr.range(cols, (col) => {
+        const cellNum = (row * cols) + col + 1;
+        return `<td>Cell ${cellNum}</td>`;
+      }).join('') + '</tr>'
+    ).join('');
+
+    const renderedColumns = Arr.range(cols, () => {
       const cellWidth = generateWidth(mode, width, cols);
-      const cellNum = (row * cols) + col + 1;
-      return `<td style="${cellWidth}">Cell ${cellNum}</td>`;
-    }).join('') + '</tr>').join('');
-    return `<table border="1" style="border-collapse: collapse;${tableWidth}"><tbody>${renderedRows}</tbody></table>`;
+      return `<col style="${cellWidth}"></col>`;
+    }).join('');
+
+    return `<table border="1" style="border-collapse: collapse;${tableWidth}"><colgroup>${renderedColumns}</colgroup><tbody>${renderedRows}</tbody></table>`;
   };
 
   TinyLoader.setupLight((editor, onSuccess, onFailure) => {
     const tinyApis = TinyApis(editor);
 
-    const sTest = (scenario: Scenario) => GeneralSteps.sequence([
-      tinyApis.sSetContent(generateTable(scenario.mode, scenario.tableWidth, scenario.rows, scenario.cols)),
-      tinyApis.sSetSelection([ 0, 0, 0, 0 ], 0, [ 0, 0, 0, 0 ], 0),
-      tinyApis.sExecCommand('mceTableSizingMode', scenario.newMode),
-      sAssertTableStructureWithSizes(editor, scenario.cols, scenario.rows, getUnit(scenario.newMode), scenario.expectedTableWidth, scenario.expectedWidths, false)
-    ]);
+    const sTest = (scenario: Scenario) =>
+      GeneralSteps.sequence([
+        tinyApis.sSetContent(generateTable(scenario.mode, scenario.tableWidth, scenario.rows, scenario.cols)),
+        tinyApis.sSetSelection([ 0, 1, 0, 0 ], 0, [ 0, 1, 0, 0 ], 0),
+        tinyApis.sExecCommand('mceTableSizingMode', scenario.newMode),
+        sAssertTableStructureWithSizes(editor, scenario.cols, scenario.rows, getUnit(scenario.newMode), scenario.expectedTableWidth, [ scenario.expectedWidths ], true)
+      ]);
 
     Pipeline.async({}, [
       Log.step('TINY-6000', 'Percent (relative) to pixel (fixed) sizing', sTest({
@@ -69,11 +78,7 @@ UnitTest.asynctest('browser.tinymce.plugins.table.command.TableSizingModeCommand
         cols: 2,
         newMode: 'fixed',
         expectedTableWidth: 800,
-        expectedWidths: [
-          [ 400, 400 ],
-          [ 400, 400 ],
-          [ 400, 400 ]
-        ]
+        expectedWidths: [ 400, 400 ]
       })),
       Log.step('TINY-6000', 'Percent (relative) to none (responsive) sizing', sTest({
         mode: 'relative',
@@ -82,11 +87,7 @@ UnitTest.asynctest('browser.tinymce.plugins.table.command.TableSizingModeCommand
         cols: 2,
         newMode: 'responsive',
         expectedTableWidth: null,
-        expectedWidths: [
-          [ null, null ],
-          [ null, null ],
-          [ null, null ]
-        ]
+        expectedWidths: [ null, null ]
       })),
       Log.step('TINY-6000', 'Pixel (fixed) to percent (relative) sizing', sTest({
         mode: 'fixed',
@@ -95,10 +96,7 @@ UnitTest.asynctest('browser.tinymce.plugins.table.command.TableSizingModeCommand
         cols: 2,
         newMode: 'relative',
         expectedTableWidth: 75,
-        expectedWidths: [
-          [ 50, 50 ],
-          [ 50, 50 ]
-        ]
+        expectedWidths: [ 50, 50 ]
       })),
       Log.step('TINY-6000', 'Pixel (fixed) to none (responsive) sizing', sTest({
         mode: 'fixed',
@@ -107,10 +105,7 @@ UnitTest.asynctest('browser.tinymce.plugins.table.command.TableSizingModeCommand
         cols: 2,
         newMode: 'responsive',
         expectedTableWidth: null,
-        expectedWidths: [
-          [ null, null ],
-          [ null, null ]
-        ]
+        expectedWidths: [ null, null ]
       })),
       Log.step('TINY-6000', 'None (responsive) to percent (relative) sizing', sTest({
         mode: 'responsive',
@@ -119,10 +114,7 @@ UnitTest.asynctest('browser.tinymce.plugins.table.command.TableSizingModeCommand
         cols: 3,
         newMode: 'relative',
         expectedTableWidth: 16,
-        expectedWidths: [
-          [ 31, 31, 31 ],
-          [ 31, 31, 31 ]
-        ]
+        expectedWidths: [ 33, 33, 33 ]
       })),
       Log.step('TINY-6000', 'None (responsive) to pixel (fixed) sizing', sTest({
         mode: 'responsive',
@@ -131,10 +123,7 @@ UnitTest.asynctest('browser.tinymce.plugins.table.command.TableSizingModeCommand
         cols: 3,
         newMode: 'fixed',
         expectedTableWidth: 133,
-        expectedWidths: [
-          [ 41, 41, 41 ],
-          [ 41, 41, 41 ]
-        ]
+        expectedWidths: [ 44, 44, 44 ]
       }))
     ], onSuccess, onFailure);
   }, {
@@ -143,6 +132,7 @@ UnitTest.asynctest('browser.tinymce.plugins.table.command.TableSizingModeCommand
     width: 850,
     content_css: false,
     content_style: 'body { margin: 10px; max-width: 800px }',
-    base_url: '/project/tinymce/js/tinymce'
+    base_url: '/project/tinymce/js/tinymce',
+    table_col_group: true
   }, success, failure);
 });

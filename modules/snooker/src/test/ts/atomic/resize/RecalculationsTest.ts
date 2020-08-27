@@ -26,7 +26,7 @@ UnitTest.test('RecalculationsTest', function () {
 
   const check = function (expected: Parts[], input: Structs.RowData<Structs.Detail>[], sizes: Structs.Dimensions) {
     const warehouse = Warehouse.generate(input);
-    const actualW = Recalculations.recalculateWidth(warehouse, sizes.width);
+    const actualW = Recalculations.recalculateWidthForTd(warehouse, sizes.width);
     const actualH = Recalculations.recalculateHeight(warehouse, sizes.height);
 
     Arr.each(expected, function (expt) {

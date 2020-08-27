@@ -7,13 +7,14 @@ import Plugin from 'tinymce/plugins/table/Plugin';
 import SilverTheme from 'tinymce/themes/silver/Theme';
 import { sAssertTableStructureWithSizes } from '../module/test/TableTestUtils';
 
-UnitTest.asynctest('browser.tinymce.plugins.table.InsertTableTest', (success, failure) => {
+UnitTest.asynctest('browser.tinymce.plugins.table.InsertTableWithColGroupTest', (success, failure) => {
   Plugin();
   SilverTheme();
 
-  const sInsertTable = (editor: Editor, cols: number, rows: number) => Logger.t('Insert table ' + cols + 'x' + rows, Step.sync(() => {
-    editor.plugins.table.insertTable(cols, rows);
-  }));
+  const sInsertTable = (editor: Editor, cols: number, rows: number) =>
+    Logger.t('Insert table ' + cols + 'x' + rows, Step.sync(() => {
+      editor.plugins.table.insertTable(cols, rows);
+    }));
 
   TinyLoader.setup(function (editor, onSuccess, onFailure) {
     const tinyApis = TinyApis(editor);
@@ -25,8 +26,17 @@ UnitTest.asynctest('browser.tinymce.plugins.table.InsertTableTest', (success, fa
         sAssertTableStructureWithSizes(editor, 2, 2, '%', 100, [
           [ 50, 50 ],
           [ 50, 50 ]
-        ], false),
-        tinyApis.sAssertSelection([ 0, 0, 0, 0 ], 0, [ 0, 0, 0, 0 ], 0)
+        ], true),
+        tinyApis.sAssertSelection([ 0, 1, 0, 0 ], 0, [ 0, 1, 0, 0 ], 0)
+      ]),
+      Log.stepsAsStep('TBA', 'Table: Insert table 2x2', [
+        tinyApis.sSetContent(''),
+        sInsertTable(editor, 2, 2),
+        sAssertTableStructureWithSizes(editor, 2, 2, '%', 100, [
+          [ 50, 50 ],
+          [ 50, 50 ]
+        ], true),
+        tinyApis.sAssertSelection([ 0, 1, 0, 0 ], 0, [ 0, 1, 0, 0 ], 0)
       ]),
       Log.stepsAsStep('TBA', 'Table: Insert table 1x2', [
         tinyApis.sSetContent(''),
@@ -34,16 +44,16 @@ UnitTest.asynctest('browser.tinymce.plugins.table.InsertTableTest', (success, fa
         sAssertTableStructureWithSizes(editor, 1, 2, '%', 100, [
           [ 100 ],
           [ 100 ]
-        ], false),
-        tinyApis.sAssertSelection([ 0, 0, 0, 0 ], 0, [ 0, 0, 0, 0 ], 0)
+        ], true),
+        tinyApis.sAssertSelection([ 0, 1, 0, 0 ], 0, [ 0, 1, 0, 0 ], 0)
       ]),
       Log.stepsAsStep('TBA', 'Table: Insert table 2x1', [
         tinyApis.sSetContent(''),
         sInsertTable(editor, 2, 1),
         sAssertTableStructureWithSizes(editor, 2, 1, '%', 100, [
           [ 50, 50 ]
-        ], false),
-        tinyApis.sAssertSelection([ 0, 0, 0, 0 ], 0, [ 0, 0, 0, 0 ], 0)
+        ], true),
+        tinyApis.sAssertSelection([ 0, 1, 0, 0 ], 0, [ 0, 1, 0, 0 ], 0)
       ])
     ], onSuccess, onFailure);
   }, {
@@ -55,6 +65,7 @@ UnitTest.asynctest('browser.tinymce.plugins.table.InsertTableTest', (success, fa
     },
     theme: 'silver',
     base_url: '/project/tinymce/js/tinymce',
-    statusbar: false
+    statusbar: false,
+    table_col_group: true
   }, success, failure);
 });
