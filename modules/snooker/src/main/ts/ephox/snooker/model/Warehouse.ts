@@ -1,5 +1,5 @@
 import { Arr, Optional } from '@ephox/katamari';
-import { SugarElement, Traverse } from '@ephox/sugar';
+import { SugarElement, Traverse, SugarNode } from '@ephox/sugar';
 import * as Structs from '../api/Structs';
 import * as DetailsList from './DetailsList';
 
@@ -81,9 +81,7 @@ const generate = <T extends Structs.Detail> (list: Structs.RowData<T>[]): Wareho
 
     if (rowData.section === 'colgroup') {
       groups = Traverse.children(rowData.element);
-      groups = Arr.filter(groups, (element): boolean =>
-        element.dom.nodeName === 'COL'
-      );
+      groups = Arr.filter(groups, SugarNode.isTag('col'));
     } else {
       maxRows++;
       cells.push(Structs.rowdata(rowData.element, currentRow, rowData.section));

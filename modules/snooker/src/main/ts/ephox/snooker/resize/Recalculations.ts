@@ -30,7 +30,7 @@ interface CellHeightSpan extends CellHeight {
 
 // Returns an array of all cells in warehouse with updated cell-widths, using
 // the array 'widths' of the representative widths of each column of the table 'warehouse'
-const recalculateWidthForTd = (warehouse: Warehouse, widths: number[]): CellWidthSpan[] => {
+const recalculateWidthForCells = (warehouse: Warehouse, widths: number[]): CellWidthSpan[] => {
   const all = Warehouse.justCells(warehouse);
 
   return Arr.map(all, function (cell) {
@@ -47,16 +47,16 @@ const recalculateWidthForTd = (warehouse: Warehouse, widths: number[]): CellWidt
 const recalculateWidthForColumns = (warehouse: Warehouse, widths: number[]): CellWidthSpan[] => {
   const groups = Warehouse.justColumns(warehouse);
 
-  return Arr.map(groups, (cell: SugarElement, index: number) => ({
-    element: cell,
+  return Arr.map(groups, (col: SugarElement, index: number) => ({
+    element: col,
     width: widths[index],
     colspan: 1
   }));
 };
 
-const recalculateHeight = function (warehouse: Warehouse, heights: number[]): CellHeightSpan[] {
+const recalculateHeightForCells = (warehouse: Warehouse, heights: number[]): CellHeightSpan[] => {
   const all = Warehouse.justCells(warehouse);
-  return Arr.map(all, function (cell) {
+  return Arr.map(all, (cell) => {
     const height = total(cell.row, cell.row + cell.rowspan, heights);
     return {
       element: cell.element,
@@ -76,9 +76,9 @@ const matchRowHeight = function (warehouse: Warehouse, heights: number[]): CellH
 };
 
 export {
-  recalculateWidthForTd,
+  recalculateWidthForCells,
   recalculateWidthForColumns,
-  recalculateHeight,
+  recalculateHeightForCells,
   matchRowHeight,
   CellWidthSpan
 };

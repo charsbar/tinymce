@@ -397,41 +397,18 @@ const sAssertTableStructureWithSizes = (
   useColGroups: boolean,
   options: Options = { headerRows: 0, headerCols: 0 }
 ): Step<any, any> => {
-  if (useColGroups) {
-    return sAssertTableStructureWithSizesAndColGroups(editor, cols, rows, unit, tableWidth, widths, options);
-  } else {
-    return sAssertTableStructureWithSizesWithNoColGroups(editor, cols, rows, unit, tableWidth, widths, options);
-  }
-};
 
-const sAssertTableStructureWithSizesWithNoColGroups = (
-  editor: Editor,
-  cols: number,
-  rows: number,
-  unit: string | null,
-  tableWidth: number | null,
-  widths: Array<number | null>[],
-  options: Options
-) => GeneralSteps.sequence([
-  sAssertTableStructure(editor, ApproxStructure.build((s, str) => s.element('table', {
-    attrs: { border: str.is('1') },
-    styles: { 'border-collapse': str.is('collapse') },
-    children: [
-      s.element('tbody', {
-        children: Arr.range(rows, (rowIndex) => s.element('tr', {
-          children: Arr.range(cols, (colIndex) => s.element(colIndex < options.headerCols || rowIndex < options.headerRows ? 'th' : 'td', {
-            children: [
-              s.either([
-                s.element('br', { }),
-                s.text(str.contains('Cell'))
-              ])
-            ]
-          }))
-        }))
-      })
-    ]
-  }))),
-  Step.sync(() => {
+  const tableWithColGroup = Step.sync(() => {
+    const table = editor.dom.select('table')[0];
+    assertWidth(editor, table, tableWidth, unit);
+    const row = editor.dom.select('colgroup', table)[0];
+    Arr.each(widths[0], (columnWidth, columnIndex) => {
+      const column = editor.dom.select('col', row)[columnIndex];
+      assertWidth(editor, column, columnWidth, unit);
+    });
+  });
+
+  const tableWithoutColGroup = Step.sync(() => {
     const table = editor.dom.select('table')[0];
     assertWidth(editor, table, tableWidth, unit);
     Arr.each(widths, (rowWidths, rowIndex) => {
@@ -441,55 +418,41 @@ const sAssertTableStructureWithSizesWithNoColGroups = (
         assertWidth(editor, cell, cellWidth, unit);
       });
     });
-  })
-]);
+  });
 
-const sAssertTableStructureWithSizesAndColGroups = (
-  editor: Editor,
-  cols: number,
-  rows: number,
-  unit: string | null,
-  tableWidth: number | null,
-  widths: Array<number | null>[],
-  options: Options
-) => GeneralSteps.sequence([
-  sAssertTableStructure(editor, ApproxStructure.build((s, str) => s.element('table', {
-    attrs: { border: str.is('1') },
-    styles: { 'border-collapse': str.is('collapse') },
-    children: [
-      s.element('colgroup', {
-        children: Arr.range(cols, () =>
-          s.element('col', {})
-        )
-      }),
-      s.element('tbody', {
-        children: Arr.range(rows, (rowIndex) =>
-          s.element('tr', {
-            children: Arr.range(cols, (colIndex) =>
-              s.element(colIndex < options.headerCols || rowIndex < options.headerRows ? 'th' : 'td', {
-                children: [
-                  s.either([
-                    s.element('br', { }),
-                    s.text(str.contains('Cell'))
-                  ])
-                ]
-              })
-            )
-          })
-        )
-      })
-    ]
-  }))),
-  Step.sync(() => {
-    const table = editor.dom.select('table')[0];
-    assertWidth(editor, table, tableWidth, unit);
-    const row = editor.dom.select('colgroup', table)[0];
-    Arr.each(widths[0], (columnWidth, columnIndex) => {
-      const column = editor.dom.select('col', row)[columnIndex];
-      assertWidth(editor, column, columnWidth, unit);
+  const asserTableStructure = sAssertTableStructure(editor, ApproxStructure.build((s, str) => {
+    const tbody = s.element('tbody', {
+      children: Arr.range(rows, (rowIndex) =>
+        s.element('tr', {
+          children: Arr.range(cols, (colIndex) =>
+            s.element(colIndex < options.headerCols || rowIndex < options.headerRows ? 'th' : 'td', {
+              children: [
+                s.either([
+                  s.element('br', { }),
+                  s.text(str.contains('Cell'))
+                ])
+              ]
+            })
+          )
+        })
+      )
     });
-  })
-]);
+
+    const colGroup = s.element('colgroup', {
+      children: Arr.range(cols, () =>
+        s.element('col', {})
+      )
+    });
+
+    return s.element('table', {
+      attrs: { border: str.is('1') },
+      styles: { 'border-collapse': str.is('collapse') },
+      children: useColGroups ? [ colGroup, tbody ] : [ tbody ]
+    });
+  }));
+
+  return GeneralSteps.sequence(useColGroups ? [ asserTableStructure, tableWithColGroup ] : [ asserTableStructure, tableWithoutColGroup ]);
+};
 
 export {
   sAssertDialogPresence,

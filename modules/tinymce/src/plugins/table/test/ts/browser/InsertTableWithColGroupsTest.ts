@@ -2,7 +2,6 @@ import { Log, Logger, Pipeline, Step } from '@ephox/agar';
 import { UnitTest } from '@ephox/bedrock-client';
 import { TinyApis, TinyLoader } from '@ephox/mcagar';
 import Editor from 'tinymce/core/api/Editor';
-
 import Plugin from 'tinymce/plugins/table/Plugin';
 import SilverTheme from 'tinymce/themes/silver/Theme';
 import { sAssertTableStructureWithSizes } from '../module/test/TableTestUtils';
@@ -66,6 +65,6 @@ UnitTest.asynctest('browser.tinymce.plugins.table.InsertTableWithColGroupTest', 
     theme: 'silver',
     base_url: '/project/tinymce/js/tinymce',
     statusbar: false,
-    table_col_group: true
+    table_use_colgroups: true
   }, success, failure);
 });

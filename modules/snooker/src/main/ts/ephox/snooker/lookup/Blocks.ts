@@ -15,8 +15,7 @@ const columns = (warehouse: Warehouse): Optional<SugarElement>[] => {
   const rowsArr = Arr.range(grid.rows, Fun.identity);
 
   if (Warehouse.hasColumns(warehouse)) {
-    return Arr.map(Warehouse.justColumns(warehouse), (element) =>
-      Optional.from(element));
+    return Arr.map(Warehouse.justColumns(warehouse), Optional.from);
   } else {
     return Arr.map(cols, (col) => {
       const getBlock = () =>

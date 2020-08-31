@@ -89,13 +89,13 @@ const render = <T extends DetailNew> (table: SugarElement, grid: RowDataNew<T>[]
     }
   });
 
-  renderOrRemoveSection(headSection, 'thead');
-  renderOrRemoveSection(bodySection, 'tbody');
-  renderOrRemoveSection(footSection, 'tfoot');
-
   if (columnGroupsSection.length) {
     renderOrRemoveSection(columnGroupsSection, 'colgroup');
   }
+
+  renderOrRemoveSection(headSection, 'thead');
+  renderOrRemoveSection(bodySection, 'tbody');
+  renderOrRemoveSection(footSection, 'tfoot');
 
   return {
     newRows,

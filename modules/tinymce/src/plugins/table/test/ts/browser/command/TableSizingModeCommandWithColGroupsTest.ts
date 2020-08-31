@@ -133,6 +133,6 @@ UnitTest.asynctest('browser.tinymce.plugins.table.command.TableSizingModeCommand
     content_css: false,
     content_style: 'body { margin: 10px; max-width: 800px }',
     base_url: '/project/tinymce/js/tinymce',
-    table_col_group: true
+    table_use_colgroups: true
   }, success, failure);
 });

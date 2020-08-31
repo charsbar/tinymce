@@ -1,4 +1,4 @@
-import { ApproxStructure, GeneralSteps, Logger, Pipeline, Waiter } from '@ephox/agar';
+import { ApproxStructure, GeneralSteps, Log, Pipeline, Waiter } from '@ephox/agar';
 import { UnitTest } from '@ephox/bedrock-client';
 import { TinyApis, TinyLoader, TinyUi } from '@ephox/mcagar';
 import TablePlugin from 'tinymce/plugins/table/Plugin';
@@ -14,7 +14,7 @@ UnitTest.asynctest('browser.tinymce.plugins.table.TableDefaultAttributesWithColG
     const tinyApis = TinyApis(editor);
     const tinyUi = TinyUi(editor);
 
-    const createTableChildren = (s, str: ApproxStructure.StringApi, _arr) =>
+    const createTableChildren = (s: ApproxStructure.StructApi, str: ApproxStructure.StringApi) =>
       [
         s.element('colgroup', {
           children: [
@@ -77,12 +77,12 @@ UnitTest.asynctest('browser.tinymce.plugins.table.TableDefaultAttributesWithColG
       ];
 
     Pipeline.async({}, [
-      Logger.t('no attributes without setting', GeneralSteps.sequence([
+      Log.step('TINY-6050', 'no attributes without setting', GeneralSteps.sequence([
         tinyApis.sFocus(),
         tinyUi.sClickOnMenu('click table menu', 'span:contains("Table")'),
         Waiter.sTryUntil('click table menu', tinyUi.sClickOnUi('click table menu', 'div.tox-menu div.tox-collection__item .tox-collection__item-label:contains("Table")')),
         Waiter.sTryUntil('click table grid', tinyUi.sClickOnUi('click table grid', 'div.tox-insert-table-picker div[role="button"]:nth(11)')), // button for 2x2 table
-        TableTestUtils.sAssertTableStructure(editor, ApproxStructure.build((s, str, arr) =>
+        TableTestUtils.sAssertTableStructure(editor, ApproxStructure.build((s, str) =>
           s.element('table', {
             styles: {
               'width': str.is('100%'),
@@ -91,19 +91,19 @@ UnitTest.asynctest('browser.tinymce.plugins.table.TableDefaultAttributesWithColG
             attrs: {
               border: str.is('1')
             },
-            children: createTableChildren(s, str, arr)
+            children: createTableChildren(s, str)
           })
         )),
         tinyApis.sSetContent('')
       ])),
 
-      Logger.t('test default title attribute', GeneralSteps.sequence([
+      Log.step('TINY-6050', 'test default title attribute', GeneralSteps.sequence([
         tinyApis.sFocus(),
         tinyApis.sSetSetting('table_default_attributes', { title: 'x' }),
         tinyUi.sClickOnMenu('click table menu', 'span:contains("Table")'),
         Waiter.sTryUntil('click table menu', tinyUi.sClickOnUi('click table menu', 'div.tox-menu div.tox-collection__item .tox-collection__item-label:contains("Table")'), 10, 1000),
         Waiter.sTryUntil('click table grid', tinyUi.sClickOnUi('click table grid', 'div.tox-insert-table-picker div[role="button"]:nth(11)'), 10, 1000), // button for 2x2 table
-        TableTestUtils.sAssertTableStructure(editor, ApproxStructure.build((s, str, arr) =>
+        TableTestUtils.sAssertTableStructure(editor, ApproxStructure.build((s, str) =>
           s.element('table', {
             styles: {
               'width': str.is('100%'),
@@ -113,7 +113,7 @@ UnitTest.asynctest('browser.tinymce.plugins.table.TableDefaultAttributesWithColG
               border: str.none('Should not have the default border'),
               title: str.is('x')
             },
-            children: createTableChildren(s, str, arr)
+            children: createTableChildren(s, str)
           })
         )),
         tinyApis.sSetContent('')
@@ -125,6 +125,6 @@ UnitTest.asynctest('browser.tinymce.plugins.table.TableDefaultAttributesWithColG
     theme: 'silver',
     base_url: '/project/tinymce/js/tinymce',
     statusbar: false,
-    table_col_group: true
+    table_use_colgroups: true
   }, success, failure);
 });

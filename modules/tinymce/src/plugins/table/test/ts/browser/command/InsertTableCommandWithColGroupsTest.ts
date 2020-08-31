@@ -92,6 +92,6 @@ UnitTest.asynctest('browser.tinymce.plugins.table.command.InsertTableCommandWith
     base_url: '/project/tinymce/js/tinymce',
     statusbar: false,
     table_header_type: 'cells',
-    table_col_group: true
+    table_use_colgroups: true
   }, success, failure);
 });

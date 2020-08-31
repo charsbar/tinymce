@@ -72,10 +72,10 @@ UnitTest.test('TableAdjustmentsTest', () => {
 
   const pixelTableWithColGroup = () => SugarElement.fromHtml<HTMLTableElement>(`<table style="border-collapse: collapse; width: 400px;" border="1">
   <colgroup>
-  <col style="width: 96.75px;">
-  <col style="width: 96.75px;">
-  <col style="width: 96.75px;">
-  <col style="width: 96.75px;">
+  <col style="width: 100px;">
+  <col style="width: 100px;">
+  <col style="width: 100px;">
+  <col style="width: 100px;">
   </colgroup>
   <tbody>
   <tr>

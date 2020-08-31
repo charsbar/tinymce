@@ -19,7 +19,7 @@ const recalculateAndApply = (warehouse: Warehouse, widths: number[], tableSize: 
   if (Warehouse.hasColumns(warehouse)) {
     newSizes = Recalculations.recalculateWidthForColumns(warehouse, widths);
   } else {
-    newSizes = Recalculations.recalculateWidthForTd(warehouse, widths);
+    newSizes = Recalculations.recalculateWidthForCells(warehouse, widths);
   }
 
   Arr.each(newSizes, (cell) => {
@@ -48,7 +48,7 @@ const adjustHeight = (table: SugarElement, delta: number, index: number, directi
 
   const newHeights = Arr.map(heights, (dy, i) => index === i ? Math.max(delta + dy, CellUtils.minHeight()) : dy);
 
-  const newCellSizes = Recalculations.recalculateHeight(warehouse, newHeights);
+  const newCellSizes = Recalculations.recalculateHeightForCells(warehouse, newHeights);
   const newRowSizes = Recalculations.matchRowHeight(warehouse, newHeights);
 
   Arr.each(newRowSizes, (row) => {
