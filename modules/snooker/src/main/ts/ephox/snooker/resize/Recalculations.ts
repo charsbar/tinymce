@@ -47,11 +47,15 @@ const recalculateWidthForCells = (warehouse: Warehouse, widths: number[]): CellW
 const recalculateWidthForColumns = (warehouse: Warehouse, widths: number[]): CellWidthSpan[] => {
   const groups = Warehouse.justColumns(warehouse);
 
-  return Arr.map(groups, (col: SugarElement, index: number) => ({
-    element: col,
-    width: widths[index],
-    colspan: 1
-  }));
+  return Arr.map(groups, (col: SugarElement, index: number) => {
+    const colspan = col.dom.getAttribute('colspan');
+
+    return {
+      element: col,
+      width: widths[index],
+      colspan: colspan ? Number.parseInt(colspan, 10) : 1
+    };
+  });
 };
 
 const recalculateHeightForCells = (warehouse: Warehouse, heights: number[]): CellHeightSpan[] => {
