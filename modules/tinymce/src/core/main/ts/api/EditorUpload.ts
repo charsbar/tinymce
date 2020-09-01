@@ -152,6 +152,7 @@ const EditorUpload = function (editor: Editor): EditorUpload {
             replaceImageUriInView(image, uploadInfo.url);
           } else if (uploadInfo.error) {
             if (uploadInfo.error.options.remove) {
+              replaceUrlInUndoStack(image.getAttribute('src'), Env.transparentSrc, replaceImageUrlForPlaceholder);
               imagesToRemove.push(image);
             }
 
@@ -174,7 +175,6 @@ const EditorUpload = function (editor: Editor): EditorUpload {
             editor.undoManager.transact(() => {
               Arr.each(imagesToRemove, (element) => {
                 editor.dom.remove(element);
-                replaceUrlInUndoStack(element.getAttribute('src'), Env.transparentSrc, replaceImageUrlForPlaceholder);
                 blobCache.removeByUri(element.src);
               });
             });
